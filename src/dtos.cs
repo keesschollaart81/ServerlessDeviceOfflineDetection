@@ -5,7 +5,6 @@ namespace DeviceOfflineDetection
     public class OrchestratorArgs
     {
         public string DeviceId { get; set; }
-        public int TimeoutInSeconds { get; set; }
     }
 
     public class Device

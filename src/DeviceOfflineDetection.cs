@@ -18,8 +18,12 @@ namespace DeviceOfflineDetection
             [OrchestrationClient] IDurableOrchestrationClient durableOrchestrationClient,
             ILogger log)
         {
+            var entity = new EntityId(nameof(DeviceEntity), args.DeviceId);
+
             // tricky stuff, make sure the orchestrationId is deterministic but also unique and has now weird characters
             var orchestrationId = args.DeviceId;
+
+            await durableOrchestrationClient.SignalEntityAsync(entity, "UpdateLastCommunicationDateTime");
 
             var status = await durableOrchestrationClient.GetStatusAsync(orchestrationId);
 
@@ -29,7 +33,7 @@ namespace DeviceOfflineDetection
             }
             else
             {
-                await durableOrchestrationClient.StartNewAsync(nameof(WaitingOrchestrator), orchestrationId, null);
+                await durableOrchestrationClient.StartNewAsync(nameof(WaitingOrchestrator), orchestrationId, new OrchestratorArgs { DeviceId = args.DeviceId });
             }
 
             log.LogInformation("Started orchestration with ID = '{orchestrationId}'.", orchestrationId);
@@ -60,29 +64,32 @@ namespace DeviceOfflineDetection
             var offlineAfter = await ctx.CallEntityAsync<TimeSpan>(entity, "GetOfflineAfter");
             var lastActivity = await ctx.CallEntityAsync<DateTime?>(entity, "GetLastMessageReceived");
 
-            if (!lastActivity.HasValue || DateTime.UtcNow - lastActivity > offlineAfter)
+            if (!ctx.IsReplaying && (!lastActivity.HasValue || ctx.CurrentUtcDateTime - lastActivity > offlineAfter))
             {
                 // This runs for the first message ever for a device id
-                // Also, after a device has gone offline and comes back online, this orchestrator starts again  Last Activity should then be longer ago then the offline after
+                // Also, after a device has gone offline and comes back online, this orchestrator starts again Last Activity should then be longer ago then the offline after
                 log.LogInformation($"Device {orchestratorArgs.DeviceId}, was unkown or offline and is now online!");
                 await ctx.CallActivityAsync(nameof(SendStatusUpdate), new StatusUpdateArgs(orchestratorArgs.DeviceId, true));
             }
 
-            while (true)
+            try
             {
-                ctx.SignalEntity(entity, "SetLastCommunicationDateTime", DateTime.UtcNow);
-
-                try
+                await ctx.WaitForExternalEvent("MessageReceived", offlineAfter);
+                if (!ctx.IsReplaying)
                 {
-                    await ctx.WaitForExternalEvent("MessageReceived", offlineAfter);
                     log.LogInformation($"Message received for device {orchestratorArgs.DeviceId}, resetting timeout of {offlineAfter.TotalSeconds} seconds offline detection...");
                 }
-                catch (Exception)
+                ctx.ContinueAsNew(orchestratorArgs);
+                return;
+            }
+            catch (TimeoutException)
+            {
+                if (!ctx.IsReplaying)
                 {
                     log.LogWarning($"Device {orchestratorArgs.DeviceId}, is now offline after waiting for {offlineAfter.TotalSeconds} seconds");
-                    await ctx.CallActivityAsync(nameof(SendStatusUpdate), new StatusUpdateArgs(orchestratorArgs.DeviceId, false));
-                    return;
                 }
+                await ctx.CallActivityAsync(nameof(SendStatusUpdate), new StatusUpdateArgs(orchestratorArgs.DeviceId, false));
+                return;
             }
         }
 
@@ -98,13 +105,13 @@ namespace DeviceOfflineDetection
                 // typically somewhere here, you would get some metadata from a device registry
                 // async operations are fine here since an Entity is considered to be an activity 
                 // + this only happens the first time a node needs this entity
-                device.OfflineAfter = TimeSpan.FromMinutes(3);
+                device.OfflineAfter = TimeSpan.FromSeconds(30);
                 ctx.SetState(device);
             }
 
             switch (ctx.OperationName)
             {
-                case "SetLastCommunicationDateTime":
+                case "UpdateLastCommunicationDateTime":
                     device.LastCommunicationDateTime = DateTime.UtcNow;
                     ctx.SetState(device);
                     break;
