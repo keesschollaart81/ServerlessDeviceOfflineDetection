@@ -18,22 +18,24 @@ namespace DeviceOfflineDetection
             [OrchestrationClient] IDurableOrchestrationClient durableOrchestrationClient,
             ILogger log)
         {
-            var entity = new EntityId(nameof(DeviceEntity), args.DeviceId);
-
-            // tricky stuff, make sure the orchestrationId is deterministic but also unique and has now weird characters
+            // 'orchestrationId = DeviceId' > tricky stuff, make sure the orchestrationId is deterministic but also unique and has now weird characters
             var orchestrationId = args.DeviceId;
-
-            await durableOrchestrationClient.SignalEntityAsync(entity, "UpdateLastCommunicationDateTime");
-
             var status = await durableOrchestrationClient.GetStatusAsync(orchestrationId);
 
-            if (status?.RuntimeStatus == OrchestrationRuntimeStatus.Running)
+            // Maybe do this from within the Orchestrator
+            var entity = new EntityId(nameof(DeviceEntity), args.DeviceId);
+            await durableOrchestrationClient.SignalEntityAsync(entity, "UpdateLastCommunicationDateTime");
+
+            switch (status?.RuntimeStatus)
             {
-                await durableOrchestrationClient.RaiseEventAsync(orchestrationId, "MessageReceived", null);
-            }
-            else
-            {
-                await durableOrchestrationClient.StartNewAsync(nameof(WaitingOrchestrator), orchestrationId, new OrchestratorArgs { DeviceId = args.DeviceId });
+                case OrchestrationRuntimeStatus.Running:
+                case OrchestrationRuntimeStatus.Pending:
+                case OrchestrationRuntimeStatus.ContinuedAsNew:
+                    await durableOrchestrationClient.RaiseEventAsync(orchestrationId, "MessageReceived", null);
+                    break;
+                default:
+                    await durableOrchestrationClient.StartNewAsync(nameof(WaitingOrchestrator), orchestrationId, new OrchestratorArgs { DeviceId = args.DeviceId });
+                    break;
             }
 
             log.LogInformation("Started orchestration with ID = '{orchestrationId}'.", orchestrationId);
@@ -42,13 +44,10 @@ namespace DeviceOfflineDetection
             return new OkObjectResult(response);
         }
 
-        // For each message we create this waiting-orchestrator
-        // It waits for a Device specific timeout
-        // While waiting, there is no thread running
-        // After the timeout, it fetches the Durable Entities state
-        // .. and checks if that state has been updated
-        // be aware: Orchestrators have some specifics like replays (google) 
-        // next to that, Orchestrators are triggered from a queue but this queue is only polled every 1 minute (which you can update but that is tricky)  
+        // For each device we create this never ending Orchestrator
+        // At any point in time, maximum 1 orchestrator per device is active
+        // It waits for a 'MessageReceived' external event
+        // While waiting, there is no thread running  
         [FunctionName(nameof(WaitingOrchestrator))]
         public static async Task WaitingOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext ctx,
