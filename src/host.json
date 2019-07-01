@@ -4,8 +4,9 @@
     "durableTask": {
       "hubName": "Devices",
       "storageProvider": {
-        "storageProvider": {
-          "emulator": {}
+        "azureStorage": {
+          "connectionStringName": "DurableFunctionsStorageAccount",
+          "partitionCount": 15
         }
       }
     }

@@ -129,9 +129,29 @@ namespace DeviceOfflineDetection
             ILogger log
             )
         {
+            if (status.Online)
+            {
+                log.LogMetric("online", 1);
+            }
+            else
+            {
+                log.LogMetric("offline", 1);
+            }
             log.LogInformation($"Device ${status.DeviceId} status update! New status is: online:{status.Online}");
             // in real, send status to topic
             return Task.CompletedTask;
+        }
+
+        [FunctionName(nameof(GetStatus))]
+        public static async Task<IActionResult> GetStatus(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpTriggerArgs args,
+            [OrchestrationClient] IDurableOrchestrationClient durableOrchestrationClient,
+            ILogger log)
+        {
+            var entity = new EntityId(nameof(DeviceEntity), args.DeviceId);
+            var device = await durableOrchestrationClient.ReadEntityStateAsync<Device>(entity);
+
+            return new OkObjectResult(device);
         }
     }
 }
