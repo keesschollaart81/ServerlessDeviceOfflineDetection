@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace DeviceOfflineDetection
 {
@@ -18,83 +20,19 @@ namespace DeviceOfflineDetection
             [OrchestrationClient] IDurableOrchestrationClient durableOrchestrationClient,
             ILogger log)
         {
-            // 'orchestrationId = DeviceId' > tricky stuff, make sure the orchestrationId is deterministic but also unique and has now weird characters
-            var orchestrationId = args.DeviceId;
-            var status = await durableOrchestrationClient.GetStatusAsync(orchestrationId);
+            log.LogInformation($"Receiving message for device {args.DeviceId}");
 
-            // Maybe do this from within the Orchestrator
             var entity = new EntityId(nameof(DeviceEntity), args.DeviceId);
-            await durableOrchestrationClient.SignalEntityAsync(entity, "UpdateLastCommunicationDateTime");
+            await durableOrchestrationClient.SignalEntityAsync(entity, "MessageReceived");
 
-            switch (status?.RuntimeStatus)
-            {
-                case OrchestrationRuntimeStatus.Running:
-                case OrchestrationRuntimeStatus.Pending:
-                case OrchestrationRuntimeStatus.ContinuedAsNew:
-                    await durableOrchestrationClient.RaiseEventAsync(orchestrationId, "MessageReceived", null);
-                    break;
-                default:
-                    await durableOrchestrationClient.StartNewAsync(nameof(WaitingOrchestrator), orchestrationId, new OrchestratorArgs { DeviceId = args.DeviceId });
-                    break;
-            }
-
-            log.LogInformation("Started orchestration with ID = '{orchestrationId}'.", orchestrationId);
-            var response = durableOrchestrationClient.CreateHttpManagementPayload(orchestrationId);
-
-            return new OkObjectResult(response);
+            return new OkResult();
         }
-
-        // For each device we create this never ending Orchestrator
-        // At any point in time, maximum 1 orchestrator per device is active
-        // It waits for a 'MessageReceived' external event
-        // While waiting, there is no thread running  
-        [FunctionName(nameof(WaitingOrchestrator))]
-        public static async Task WaitingOrchestrator(
-            [OrchestrationTrigger] IDurableOrchestrationContext ctx,
-            ILogger log)
-        {
-            var orchestratorArgs = ctx.GetInput<OrchestratorArgs>();
-
-            // Using an entity as a cache for the data of the device like
-            // - OfflineAfter, static metadata, typically coming from a device registry (loaded during initialization of entity)
-            // - LastMessageReceived, 'hot' data, not essential for current PoC but could be usefull later on
-            var entity = new EntityId(nameof(DeviceEntity), orchestratorArgs.DeviceId);
-
-            var offlineAfter = await ctx.CallEntityAsync<TimeSpan>(entity, "GetOfflineAfter");
-            var lastActivity = await ctx.CallEntityAsync<DateTime?>(entity, "GetLastMessageReceived");
-
-            if (!ctx.IsReplaying && (!lastActivity.HasValue || ctx.CurrentUtcDateTime - lastActivity > offlineAfter))
-            {
-                // This runs for the first message ever for a device id
-                // Also, after a device has gone offline and comes back online, this orchestrator starts again Last Activity should then be longer ago then the offline after
-                log.LogInformation($"Device {orchestratorArgs.DeviceId}, was unkown or offline and is now online!");
-                await ctx.CallActivityAsync(nameof(SendStatusUpdate), new StatusUpdateArgs(orchestratorArgs.DeviceId, true));
-            }
-
-            try
-            {
-                await ctx.WaitForExternalEvent("MessageReceived", offlineAfter);
-                if (!ctx.IsReplaying)
-                {
-                    log.LogInformation($"Message received for device {orchestratorArgs.DeviceId}, resetting timeout of {offlineAfter.TotalSeconds} seconds offline detection...");
-                }
-                ctx.ContinueAsNew(orchestratorArgs);
-                return;
-            }
-            catch (TimeoutException)
-            {
-                if (!ctx.IsReplaying)
-                {
-                    log.LogWarning($"Device {orchestratorArgs.DeviceId}, is now offline after waiting for {offlineAfter.TotalSeconds} seconds");
-                }
-                await ctx.CallActivityAsync(nameof(SendStatusUpdate), new StatusUpdateArgs(orchestratorArgs.DeviceId, false));
-                return;
-            }
-        }
-
 
         [FunctionName(nameof(DeviceEntity))]
-        public static async Task DeviceEntity([EntityTrigger] IDurableEntityContext ctx)
+        public static async Task DeviceEntity(
+            [EntityTrigger] IDurableEntityContext ctx,
+            [Queue("timeoutQueue", Connection = "AzureWebJobsStorage")]CloudQueue timeoutQueue,
+            ILogger log)
         {
             var device = ctx.GetState<Device>();
             if (device == null)
@@ -110,8 +48,42 @@ namespace DeviceOfflineDetection
 
             switch (ctx.OperationName)
             {
-                case "UpdateLastCommunicationDateTime":
+                case "MessageReceived":
                     device.LastCommunicationDateTime = DateTime.UtcNow;
+                    device.Online = true;
+
+                    bool addTimeoutMessage = true;
+                    if (device.TimeoutQueueMessageId != null)
+                    {
+                        try
+                        {
+                            // reset the timeout
+
+                            var message = new CloudQueueMessage(device.TimeoutQueueMessageId, device.TimeoutQueueMessagePopReceipt);
+                            await timeoutQueue.UpdateMessageAsync(message, device.OfflineAfter, MessageUpdateFields.Visibility);
+                            addTimeoutMessage = false; 
+                        }
+                        catch (StorageException ex)
+                        {
+                            // once... there was a message, not any more
+                            addTimeoutMessage = true;
+                        }
+                    } 
+
+                    if (addTimeoutMessage)
+                    {
+                        // start timeout 
+
+                        var message = new CloudQueueMessage(ctx.Key);
+                        await timeoutQueue.AddMessageAsync(message, null, device.OfflineAfter, null, null);
+                        device.TimeoutQueueMessageId = message.Id;
+                        device.TimeoutQueueMessagePopReceipt = message.PopReceipt;
+
+                        // push out online event here
+                        log.LogInformation($"Device ${ctx.Key} if now online");
+                        log.LogMetric("online", 1);
+                    }
+
                     ctx.SetState(device);
                     break;
                 case "GetLastMessageReceived":
@@ -120,26 +92,31 @@ namespace DeviceOfflineDetection
                 case "GetOfflineAfter":
                     ctx.Return(device.OfflineAfter);
                     break;
+                case "DeviceTimeout":
+                    device.Online = false;
+                    device.TimeoutQueueMessageId = null;
+                    device.TimeoutQueueMessagePopReceipt = null;
+                    ctx.SetState(device);
+                    break;
+
             }
         }
 
-        [FunctionName(nameof(SendStatusUpdate))]
-        public static Task SendStatusUpdate(
-            [ActivityTrigger]StatusUpdateArgs status,
+        [FunctionName(nameof(HandleOfflineMessage))]
+        public static async Task HandleOfflineMessage(
+            [OrchestrationClient] IDurableOrchestrationClient durableOrchestrationClient,
+            [QueueTrigger("timeoutQueue", Connection = "AzureWebJobsStorage")]CloudQueueMessage message,
             ILogger log
             )
         {
-            if (status.Online)
-            {
-                log.LogMetric("online", 1);
-            }
-            else
-            {
-                log.LogMetric("offline", 1);
-            }
-            log.LogInformation($"Device ${status.DeviceId} status update! New status is: online:{status.Online}");
-            // in real, send status to topic
-            return Task.CompletedTask;
+            var deviceId = message.AsString;
+
+            var entity = new EntityId(nameof(DeviceEntity), deviceId);
+            await durableOrchestrationClient.SignalEntityAsync(entity, "DeviceTimeout");
+
+            // push out Offline event here
+            log.LogInformation($"Device ${deviceId} if now offline");
+            log.LogMetric("offline", 1);
         }
 
         [FunctionName(nameof(GetStatus))]

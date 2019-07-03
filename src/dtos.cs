@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 
 namespace DeviceOfflineDetection
@@ -11,6 +12,9 @@ namespace DeviceOfflineDetection
     {
         public TimeSpan OfflineAfter { get; set; }
         public DateTime? LastCommunicationDateTime { get; set; }
+        public string TimeoutQueueMessageId { get; set; }
+        public string TimeoutQueueMessagePopReceipt { get; set; }
+        public bool Online { get; set; }
     }
 
     public class HttpTriggerArgs
