@@ -14,24 +14,24 @@
 <body>
     <div class="container">
         <ul id="statusses"></ul>
-    </div> 
-    <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.1.2/dist/browser/signalr.js"></script> 
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.1.2/dist/browser/signalr.js"></script>
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
 
             var connection = new signalR.HubConnectionBuilder()
                 .withUrl('/api')
                 .build();
-             
+
             connection.on('statusChanged', function (message) { 
                 var liElement = document.createElement('li');
-                liElement.innerHTML = message;
+                liElement.innerHTML = "<b>" + message.deviceId + "</b> is now "+ message.status;
                 document.getElementById('statusses').appendChild(liElement);
             });
-             
+
             connection.start()
                 .then(function () {
-                    console.log('connection started'); 
+                    console.log('connection started');
                 })
                 .catch(error => {
                     console.error(error.message);
