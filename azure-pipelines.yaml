@@ -89,3 +89,4 @@ stages:
               WebAppName: $(functionAppName)
               enableCustomDeployment: true
               deploymentMethod: zipDeploy
+              package: '$(Pipeline.Workspace)/drop/Functions.zip'
