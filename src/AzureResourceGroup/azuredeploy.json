@@ -74,7 +74,7 @@
             },
             {
               "name": "DurableFunctionsStorageAccount",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('durableStorageAccountName'), ';AccessKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('durableStorageAccountName')),'2015-05-01-preview').key1)]"
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('durableStorageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('durableStorageAccountName')),'2015-05-01-preview').key1)]"
             },
             {
               "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -86,7 +86,7 @@
             },
             {
               "name": "AzureSignalRConnectionString",
-              "value": "[concat('Endpoint=https://', variables('signalRServiceName'), '.service.signalr.net;AccountKey=', listKeys(resourceId('Microsoft.SignalRService/SignalR', variables('signalRServiceName')), providers('Microsoft.SignalRService','SignalR').apiVersions[0]).primaryKey)]"
+              "value": "[concat('Endpoint=https://', variables('signalRServiceName'), '.service.signalr.net;AccessKey=', listKeys(resourceId('Microsoft.SignalRService/SignalR', variables('signalRServiceName')), providers('Microsoft.SignalRService','SignalR').apiVersions[0]).primaryKey)]"
             } 
           ]
         }
