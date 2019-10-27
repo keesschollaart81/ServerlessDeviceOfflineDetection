@@ -21,8 +21,8 @@ stages:
           
     steps:
     - task: DotNetCoreCLI@2
-        displayName: 'Build project'
-        inputs:
+      displayName: 'Build project'
+      inputs:
         projects: '**/*.csproj'
         arguments: '--output $(System.DefaultWorkingDirectory)/publish_output --configuration Release'
     
