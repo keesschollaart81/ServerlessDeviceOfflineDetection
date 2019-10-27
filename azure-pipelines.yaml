@@ -1,8 +1,14 @@
-trigger:
+﻿trigger:
 - master
 - dev
 
 variables: 
+  ## 👇 Update with your own values 👇 ##
+  azureSubscription: '8666da72-cfd6-49e4-8433-9ec77195ddd7'
+  functionAppName: 'offlinedetection'
+  resourceGroupName: 'offlinedetection' 
+  ## ☝ Update with your own values ☝ ##
+
   vmImageName: 'vs2017-win2016'  
 
 stages:
