@@ -1,0 +1,79 @@
+trigger:
+- master
+- dev
+
+variables: 
+  azureSubscription: '{{ azureRmConnection.Id }}' 
+  functionAppName: '{{ functionAppName }}'
+  resourceGroupName: '{{ resourceGroupName }}' 
+  vmImageName: 'vs2017-win2016' 
+  workingDirectory: '{{ workingDirectory }}'
+
+stages:
+- stage: build
+  displayName: 'Build'
+  condition:  
+  jobs:
+
+  - job: BuildExtension
+    pool:
+      vmImage: 'ubuntu-latest'
+          
+    steps:
+    - task: DotNetCoreCLI@2
+        displayName: 'Build project'
+        inputs:
+        projects: '**/*.csproj'
+        arguments: '--output $(System.DefaultWorkingDirectory)/publish_output --configuration Release'
+    
+    - task: ArchiveFiles@2
+      displayName: 'Archive files'
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/publish_output'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/Function/$(Build.BuildId).zip
+        replaceExistingArchive: true
+ 
+    - task: CopyFiles@2
+      displayName: Stage ARM Template for publishing
+      inputs:
+        SourceFolder: src/AzureResourceGroup/azuredeploy.json
+        TargetFolder: $(Build.ArtifactStagingDirectory)
+        
+    - publish: $(Build.ArtifactStagingDirectory)
+      artifact: drop
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Build
+  condition: succeeded()
+
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    environment: 'development'
+    pool:
+      vmImage: $(vmImageName)
+
+    strategy:
+      runOnce:
+        deploy:
+
+          steps: 
+            - task: AzureResourceManagerTemplateDeployment@3
+              displayName: 'ARM Template deployment: Resource Group scope'
+              inputs:
+                azureSubscription: '$(azureSubscription)'
+                resourceGroupName: '$(resourceGroupName)'
+                location: 'West Europe'
+                csmFile: '$(Pipeline.Workspace)/drop/azuredeploy.json'
+
+          - task: AzureFunctionApp@1
+            displayName: 'Azure functions app deploy'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: functionApp
+              appName: $(functionAppName)
+              package: '$(Pipeline.Workspace)/drop/Function/$(Build.BuildId).zip'
+                 

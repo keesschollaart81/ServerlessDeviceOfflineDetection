@@ -2,14 +2,14 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "prefix": {
+    "functionAppName": {
       "type": "string"
     }
   },
   "variables": {
-    "prefix": "[parameters('prefix')]",
+    "prefix": "[toLower(parameters('functionAppName'))]",
     "functionPlanAppName": "[concat(variables('prefix'),'pl')]",
-    "functionAppName": "[concat(variables('prefix'),'fu')]",
+    "functionAppName": "[variables('prefix')]",
     "applicationInsightsName": "[concat(variables('prefix'),'ai')]",
     "storageAccountName": "[concat(variables('prefix'),'st')]",
     "durableStorageAccountName": "[concat(variables('prefix'),'dst')]"
