@@ -72,11 +72,20 @@ stages:
               csmFile: '$(Pipeline.Workspace)/drop/src/AzureResourceGroup/azuredeploy.json'
               overrideParameters: '-functionAppName $(functionAppName)'
 
-          - task: AzureFunctionApp@1
+          #- task: AzureFunctionApp@1
+          #  displayName: 'Azure functions app deploy'
+          #  inputs:
+          #    azureSubscription: '$(azureSubscription)'
+          #    appType: functionApp
+          #    appName: $(functionAppName)
+          #    package: '$(Pipeline.Workspace)/drop/Functions.zip'
+          #    deploymentMethod: zipDeploy
+ 
+          - task: AzureRmWebAppDeployment@4
             displayName: 'Azure functions app deploy'
             inputs:
               azureSubscription: '$(azureSubscription)'
               appType: functionApp
-              appName: $(functionAppName)
-              package: '$(Pipeline.Workspace)/drop/Functions.zip'
-                 
+              WebAppName: $(functionAppName)
+              enableCustomDeployment: true
+              deploymentMethod: zipDeploy
