@@ -14,7 +14,6 @@ variables:
 stages:
 - stage: build
   displayName: 'Build'
-  condition:  
   jobs:
 
   - job: BuildExtension
@@ -40,7 +39,7 @@ stages:
     - task: CopyFiles@2
       displayName: Stage ARM Template for publishing
       inputs:
-        SourceFolder: src/AzureResourceGroup/azuredeploy.json
+        contents: 'src/AzureResourceGroup/azuredeploy.json'
         TargetFolder: $(Build.ArtifactStagingDirectory)
         
     - publish: $(Build.ArtifactStagingDirectory)
