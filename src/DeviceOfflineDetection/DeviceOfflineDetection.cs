@@ -47,8 +47,11 @@ namespace DeviceOfflineDetection
             {
 
             }
-            // push out Offline event here
-            await signalRMessages.AddAsync(new SignalRMessage { Arguments = new[] { new { deviceId = 1 } } });
+
+            await signalRMessages.AddAsync(new SignalRMessage {
+                Target = "statusChanged",
+                Arguments = new[] { new { deviceId = 1, status = "offline" } }
+            });
             log.LogInformation($"Device ${deviceId} if now offline");
             log.LogMetric("offline", 1);
         }
