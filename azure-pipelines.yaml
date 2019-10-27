@@ -69,11 +69,11 @@ stages:
                 location: 'West Europe'
                 csmFile: '$(Pipeline.Workspace)/drop/azuredeploy.json'
 
-          - task: AzureFunctionApp@1
-            displayName: 'Azure functions app deploy'
-            inputs:
-              azureSubscription: '$(azureSubscription)'
-              appType: functionApp
-              appName: $(functionAppName)
-              package: '$(Pipeline.Workspace)/drop/Function/$(Build.BuildId).zip'
+            - task: AzureFunctionApp@1
+              displayName: 'Azure functions app deploy'
+              inputs:
+                azureSubscription: '$(azureSubscription)'
+                appType: functionApp
+                appName: $(functionAppName)
+                package: '$(Pipeline.Workspace)/drop/Function/$(Build.BuildId).zip'
                  
