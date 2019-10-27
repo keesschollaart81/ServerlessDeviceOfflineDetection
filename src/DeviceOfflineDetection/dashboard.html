@@ -19,10 +19,8 @@
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
 
-            const apiBaseUrl = prompt('Enter the Azure Function app base URL', 'https://offlinedetection.azurewebsites.net');
-               
             var connection = new signalR.HubConnectionBuilder()
-                .withUrl(`${apiBaseUrl}/api`)
+                .withUrl('/api')
                 .build();
              
             connection.on('statusChanged', function (message) { 

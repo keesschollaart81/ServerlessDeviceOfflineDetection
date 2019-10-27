@@ -18,12 +18,19 @@ namespace DeviceOfflineDetection
         public static async Task<IActionResult> HttpTrigger(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpTriggerArgs args,
             [DurableClient] IDurableEntityClient durableEntityClient,
+            [SignalR(HubName = "devicestatus")] IAsyncCollector<SignalRMessage> signalRMessages,
             ILogger log)
         {
             log.LogInformation($"Receiving message for device {args.DeviceId}");
 
             var entity = new EntityId(nameof(DeviceEntity), args.DeviceId);
             await durableEntityClient.SignalEntityAsync(entity, nameof(DeviceEntity.MessageReceived));
+
+            await signalRMessages.AddAsync(new SignalRMessage
+            {
+                Target = "statusChanged",
+                Arguments = new[] { new { deviceId = args.DeviceId, status = "online" } }
+            });
 
             return new OkResult();
         }
@@ -39,19 +46,14 @@ namespace DeviceOfflineDetection
             var deviceId = message.AsString;
 
             var entity = new EntityId(nameof(DeviceEntity), deviceId);
-            try
-            {
-                await durableEntityClient.SignalEntityAsync(entity, nameof(DeviceEntity.DeviceTimeout));
-            }
-            catch (Exception ex)
-            {
+            await durableEntityClient.SignalEntityAsync(entity, nameof(DeviceEntity.DeviceTimeout));
 
-            }
-
-            await signalRMessages.AddAsync(new SignalRMessage {
+            await signalRMessages.AddAsync(new SignalRMessage
+            {
                 Target = "statusChanged",
-                Arguments = new[] { new { deviceId = 1, status = "offline" } }
+                Arguments = new[] { new { deviceId = deviceId, status = "offline" } }
             });
+
             log.LogInformation($"Device ${deviceId} if now offline");
             log.LogMetric("offline", 1);
         }
