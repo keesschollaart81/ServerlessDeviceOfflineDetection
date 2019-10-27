@@ -33,7 +33,7 @@ stages:
         rootFolderOrFile: '$(System.DefaultWorkingDirectory)/publish_output'
         includeRootFolder: false
         archiveType: zip
-        archiveFile: $(Build.ArtifactStagingDirectory)/Function/$(Build.BuildId).zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/Functions.zip
         replaceExistingArchive: true
  
     - task: CopyFiles@2
@@ -78,5 +78,5 @@ stages:
               azureSubscription: '$(azureSubscription)'
               appType: functionApp
               appName: $(functionAppName)
-              package: '$(Pipeline.Workspace)/drop/Function/**.zip'
+              package: '$(Pipeline.Workspace)/drop/Functions.zip'
                  
