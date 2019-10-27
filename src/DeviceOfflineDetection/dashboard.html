@@ -20,24 +20,17 @@
         document.addEventListener('DOMContentLoaded', function () {
 
             const apiBaseUrl = prompt('Enter the Azure Function app base URL', 'https://offlinedetection.azurewebsites.net');
-              
-            // Start the connection.
+               
             var connection = new signalR.HubConnectionBuilder()
                 .withUrl(`${apiBaseUrl}/api`)
                 .build();
-
-            // Create a function that the hub can call to broadcast messages.
-            connection.on('statusChanged', function (name, message) {
-                // Html encode display name and message.
-                var encodedName = name;
-                var encodedMsg = message;
-                // Add the message to the page.
+             
+            connection.on('statusChanged', function (message) { 
                 var liElement = document.createElement('li');
-                liElement.innerHTML = '<strong>' + encodedName + '</strong>:&nbsp;&nbsp;' + encodedMsg;
+                liElement.innerHTML = message;
                 document.getElementById('statusses').appendChild(liElement);
             });
-
-            // Transport fallback functionality is now built into start.
+             
             connection.start()
                 .then(function () {
                     console.log('connection started'); 
