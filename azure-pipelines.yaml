@@ -9,16 +9,16 @@ variables:
   resourceGroupName: 'offlinedetection' 
   ## ☝ Update with your own values ☝ ##
 
-  vmImageName: 'vs2017-win2016'  
+  vmImageName: 'ubuntu-latest' # or 'vs2017-win2016'  
 
 stages:
 - stage: Build
   displayName: 'Build'
   jobs:
 
-  - job: BuildExtension
+  - job: Build Funtion App
     pool:
-      vmImage: 'ubuntu-latest'
+      vmImage: $(vmImageName)
           
     steps:
     - task: DotNetCoreCLI@2
@@ -68,7 +68,8 @@ stages:
               azureSubscription: '$(azureSubscription)'
               resourceGroupName: '$(resourceGroupName)'
               location: 'West Europe'
-              csmFile: '$(Pipeline.Workspace)/drop/azuredeploy.json'
+              csmFile: '$(Pipeline.Workspace)/drop/src/AzureResourceGroup/azuredeploy.json'
+              overrideParameters: '-functionAppName $(functionAppName)'
 
           - task: AzureFunctionApp@1
             displayName: 'Azure functions app deploy'
