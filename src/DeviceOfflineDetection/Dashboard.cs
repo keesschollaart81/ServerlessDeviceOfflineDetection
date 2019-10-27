@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace DeviceOfflineDetection
 {
@@ -29,8 +30,7 @@ namespace DeviceOfflineDetection
             var content = File.ReadAllText(path);
 
             var result = new HttpResponseMessage(HttpStatusCode.OK);
-            result.Content = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(content));
-            result.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html");
+            result.Content = new StringContent(content, Encoding.UTF8, "text/html"); 
 
             return result;
         }
