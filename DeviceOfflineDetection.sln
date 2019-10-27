@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceOfflineDetection", "src\DeviceOfflineDetection.csproj", "{A35A8A0C-EFAA-42F3-A376-6E81E680B838}"
 EndProject
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "AzureResourceGroup", "AzureResourceGroup\AzureResourceGroup.deployproj", "{B1EBDA22-E6AC-40F8-88D5-F6F76676EADC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{A35A8A0C-EFAA-42F3-A376-6E81E680B838}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A35A8A0C-EFAA-42F3-A376-6E81E680B838}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A35A8A0C-EFAA-42F3-A376-6E81E680B838}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1EBDA22-E6AC-40F8-88D5-F6F76676EADC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1EBDA22-E6AC-40F8-88D5-F6F76676EADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1EBDA22-E6AC-40F8-88D5-F6F76676EADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1EBDA22-E6AC-40F8-88D5-F6F76676EADC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

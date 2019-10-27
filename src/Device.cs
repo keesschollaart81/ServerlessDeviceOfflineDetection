@@ -3,7 +3,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 
@@ -48,14 +47,14 @@ namespace DeviceOfflineDetection
         [FunctionName(nameof(DeviceEntity))]
         public static async Task HandleEntityOperation(
             [EntityTrigger] IDurableEntityContext context,
-            [Queue("timeoutQueue", Connection = "AzureWebJobsStorage")]CloudQueue timeoutQueue,
+            [Queue("timeoutQueue", Connection = "AzureWebJobsStorage")] CloudQueue timeoutQueue,
             ILogger logger)
         {
             if (context.IsNewlyConstructed)
             {
                 context.SetState(new DeviceEntity(context.EntityKey, logger, timeoutQueue));
             }
-            
+
             await context.DispatchAsync<DeviceEntity>(context.EntityKey, logger, timeoutQueue);
         }
 
@@ -75,7 +74,7 @@ namespace DeviceOfflineDetection
                     await this.timeoutQueue.UpdateMessageAsync(message, this.OfflineAfter.Value, MessageUpdateFields.Visibility);
                     addTimeoutMessage = false;
                 }
-                catch (StorageException ex)
+                 catch (StorageException ex)
                 {
                     // once... there was a message, not any more
                     addTimeoutMessage = true;
