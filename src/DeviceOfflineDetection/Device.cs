@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Queue;
@@ -33,12 +34,15 @@ namespace DeviceOfflineDetection
 
         private readonly ILogger logger;
         private readonly CloudQueue timeoutQueue;
+        private readonly IAsyncCollector<SignalRMessage> signalRMessages;
 
-        public DeviceEntity(string id, ILogger logger, CloudQueue timeoutQueue)
+        public DeviceEntity(string id, ILogger logger, CloudQueue timeoutQueue, IAsyncCollector<SignalRMessage> signalRMessages)
         {
             this.Id = id;
             this.logger = logger;
             this.timeoutQueue = timeoutQueue;
+            this.signalRMessages = signalRMessages;
+
             if (!OfflineAfter.HasValue)
             {
                 OfflineAfter = TimeSpan.FromSeconds(30);
@@ -48,15 +52,16 @@ namespace DeviceOfflineDetection
         [FunctionName(nameof(DeviceEntity))]
         public static async Task HandleEntityOperation(
             [EntityTrigger] IDurableEntityContext context,
+            [SignalR(HubName = "devicestatus")] IAsyncCollector<SignalRMessage> signalRMessages,
             [Queue("timeoutQueue", Connection = "AzureWebJobsStorage")] CloudQueue timeoutQueue,
             ILogger logger)
         {
             if (context.IsNewlyConstructed)
             {
-                context.SetState(new DeviceEntity(context.EntityKey, logger, timeoutQueue));
+                context.SetState(new DeviceEntity(context.EntityKey, logger, timeoutQueue, signalRMessages));
             }
 
-            await context.DispatchAsync<DeviceEntity>(context.EntityKey, logger, timeoutQueue);
+            await context.DispatchAsync<DeviceEntity>(context.EntityKey, logger, timeoutQueue, signalRMessages);
         }
 
         public async Task MessageReceived()
@@ -75,7 +80,7 @@ namespace DeviceOfflineDetection
                     await this.timeoutQueue.UpdateMessageAsync(message, this.OfflineAfter.Value, MessageUpdateFields.Visibility);
                     addTimeoutMessage = false;
                 }
-                 catch (StorageException ex)
+                catch (StorageException ex)
                 {
                     // once... there was a message, not any more
                     addTimeoutMessage = true;
@@ -91,19 +96,28 @@ namespace DeviceOfflineDetection
                 this.TimeoutQueueMessageId = message.Id;
                 this.TimeoutQueueMessagePopReceipt = message.PopReceipt;
 
-                // push out online event here
+                await this.ReportState("online");
                 this.logger.LogInformation($"Device ${this.Id} if now online");
                 this.logger.LogMetric("online", 1);
             }
         }
 
-        public Task DeviceTimeout()
+        private async Task ReportState(string state)
+        {
+            await this.signalRMessages.AddAsync(new SignalRMessage
+            {
+                Target = "statusChanged",
+                Arguments = new[] { new { deviceId = this.Id, status = state } }
+            });
+        }
+
+        public async Task DeviceTimeout()
         {
             this.Online = false;
             this.TimeoutQueueMessageId = null;
             this.TimeoutQueueMessagePopReceipt = null;
 
-            return Task.CompletedTask;
+            await this.ReportState("offline");
         }
     }
 }
