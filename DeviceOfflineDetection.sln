@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		azure-pipelines.yaml = azure-pipelines.yaml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dashboard", "src\Dashboard\Dashboard\Dashboard.csproj", "{F5E91966-FA8F-4669-B226-1A1E5E6A117D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dashboard", "src\Dashboard\Dashboard.csproj", "{517F5956-1494-402F-932A-74E07E4967E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,10 +28,10 @@ Global
 		{BB1C95B7-3951-4963-9944-001A1C1D4531}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB1C95B7-3951-4963-9944-001A1C1D4531}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB1C95B7-3951-4963-9944-001A1C1D4531}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F5E91966-FA8F-4669-B226-1A1E5E6A117D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F5E91966-FA8F-4669-B226-1A1E5E6A117D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F5E91966-FA8F-4669-B226-1A1E5E6A117D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F5E91966-FA8F-4669-B226-1A1E5E6A117D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{517F5956-1494-402F-932A-74E07E4967E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{517F5956-1494-402F-932A-74E07E4967E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{517F5956-1494-402F-932A-74E07E4967E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{517F5956-1494-402F-932A-74E07E4967E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
