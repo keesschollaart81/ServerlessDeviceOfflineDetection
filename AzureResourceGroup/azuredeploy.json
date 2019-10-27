@@ -11,7 +11,8 @@
     "functionPlanAppName": "[concat(variables('prefix'),'pl')]",
     "functionAppName": "[concat(variables('prefix'),'fu')]",
     "applicationInsightsName": "[concat(variables('prefix'),'ai')]",
-    "storageAccountName": "[concat(variables('prefix'),'st')]"
+    "storageAccountName": "[concat(variables('prefix'),'st')]",
+    "durableStorageAccountName": "[concat(variables('prefix'),'dst')]"
   },
   "resources": [
     {
@@ -22,6 +23,19 @@
       },
       "kind": "Storage",
       "name": "[variables('storageAccountName')]",
+      "apiVersion": "2016-01-01",
+      "location": "[resourceGroup().location]",
+      "properties": {},
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "kind": "Storage",
+      "name": "[variables('durableStorageAccountName')]",
       "apiVersion": "2016-01-01",
       "location": "[resourceGroup().location]",
       "properties": {},
@@ -58,6 +72,10 @@
               "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')),'2015-05-01-preview').key1)]"
             },
             {
+              "name": "DurableFunctionsStorageAccount",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('durableStorageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('durableStorageAccountName')),'2015-05-01-preview').key1)]"
+            },
+            {
               "name": "FUNCTIONS_EXTENSION_VERSION",
               "value": "~2"
             },
@@ -78,7 +96,7 @@
       "type": "Microsoft.Insights/components",
       "apiVersion": "2015-05-01",
       "kind": "web",
-      "name": "[variables('applicationInsightsName')]", 
+      "name": "[variables('applicationInsightsName')]",
       "location": "westeurope",
       "tags": {},
       "properties": {
