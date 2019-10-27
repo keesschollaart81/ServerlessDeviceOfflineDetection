@@ -12,28 +12,12 @@ namespace DeviceOfflineDetection
 {
     public static class Dashboard
     {
-        
-        [FunctionName(nameof(HttpTrigger))]
-        public static async Task<IActionResult> HttpTrigger(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpTriggerArgs args,
-            [DurableClient] IDurableEntityClient durableEntityClient,
-            ILogger log)
-        {
-            log.LogInformation($"Receiving message for device {args.DeviceId}");
-
-            var entity = new EntityId(nameof(DeviceEntity), args.DeviceId);
-            await durableEntityClient.SignalEntityAsync(entity, nameof(DeviceEntity.MessageReceived));
-
-            return new OkResult();
-        }
-
         [FunctionName("negotiate")]
         public static SignalRConnectionInfo GetSignalRInfo(
           [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req,
           [SignalRConnectionInfo(HubName = "devicestatus")] SignalRConnectionInfo connectionInfo)
         {
             return connectionInfo;
-        }
-
+        } 
     }
 }
