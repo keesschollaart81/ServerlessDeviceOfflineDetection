@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Queue;
 
@@ -31,6 +32,7 @@ namespace DeviceOfflineDetection
         public static async Task HandleOfflineMessage(
             [DurableClient] IDurableEntityClient durableEntityClient,
             [QueueTrigger("timeoutQueue", Connection = "AzureWebJobsStorage")]CloudQueueMessage message,
+            [SignalR(HubName = "devicestatus")] IAsyncCollector<SignalRMessage> signalRMessages,
             ILogger log
             )
         {
@@ -46,6 +48,7 @@ namespace DeviceOfflineDetection
 
             }
             // push out Offline event here
+            await signalRMessages.AddAsync(new SignalRMessage { Arguments = new[] { new { deviceId = 1 } } });
             log.LogInformation($"Device ${deviceId} if now offline");
             log.LogMetric("offline", 1);
         }
