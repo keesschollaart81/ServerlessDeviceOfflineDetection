@@ -4,6 +4,9 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace DeviceOfflineDetection
 {
@@ -18,14 +21,18 @@ namespace DeviceOfflineDetection
         }
 
         [FunctionName(nameof(Dashboard))]
-        public static IActionResult Dashboard(
+        public static HttpResponseMessage Dashboard(
             [HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequest req,
             ExecutionContext context)
         { 
             var path = Path.Combine(context.FunctionAppDirectory, "dashboard.html"); 
             var content = File.ReadAllText(path);
 
-            return new OkObjectResult(content);
+            var result = new HttpResponseMessage(HttpStatusCode.OK);
+            result.Content = new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(content));
+            result.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html");
+
+            return result;
         }
     }
 }
