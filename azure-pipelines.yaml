@@ -62,7 +62,7 @@ stages:
         deploy:
 
           steps: 
-            - task: AzureResourceManagerTemplateDeployment@3
+          - task: AzureResourceManagerTemplateDeployment@3
               displayName: 'ARM Template deployment: Resource Group scope'
               inputs:
                 azureSubscription: '$(azureSubscription)'
@@ -70,7 +70,7 @@ stages:
                 location: 'West Europe'
                 csmFile: '$(Pipeline.Workspace)/drop/azuredeploy.json'
 
-            - task: AzureFunctionApp@1
+          - task: AzureFunctionApp@1
               displayName: 'Azure functions app deploy'
               inputs:
                 azureSubscription: '$(azureSubscription)'
