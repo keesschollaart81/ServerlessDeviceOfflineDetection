@@ -22,7 +22,7 @@ namespace DeviceOfflineDetection
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "options", Route = "Dashboard")] HttpRequest req,
             ExecutionContext context)
         { 
-            var path = Path.Combine(context.FunctionDirectory, "dashboard.html"); 
+            var path = Path.Combine(context.FunctionDirectory, "../dashboard.html"); 
             var content = File.ReadAllText(path);
 
             return new OkObjectResult(content);
