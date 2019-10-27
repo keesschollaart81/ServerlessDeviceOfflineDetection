@@ -3,11 +3,7 @@ trigger:
 - dev
 
 variables: 
-  azureSubscription: '{{ azureRmConnection.Id }}' 
-  functionAppName: '{{ functionAppName }}'
-  resourceGroupName: '{{ resourceGroupName }}' 
-  vmImageName: 'vs2017-win2016' 
-  workingDirectory: '{{ workingDirectory }}'
+  vmImageName: 'vs2017-win2016'  
 
 stages:
 - stage: build
