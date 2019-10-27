@@ -63,18 +63,18 @@ stages:
 
           steps: 
           - task: AzureResourceManagerTemplateDeployment@3
-              displayName: 'ARM Template deployment: Resource Group scope'
-              inputs:
-                azureSubscription: '$(azureSubscription)'
-                resourceGroupName: '$(resourceGroupName)'
-                location: 'West Europe'
-                csmFile: '$(Pipeline.Workspace)/drop/azuredeploy.json'
+            displayName: 'ARM Template deployment: Resource Group scope'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              resourceGroupName: '$(resourceGroupName)'
+              location: 'West Europe'
+              csmFile: '$(Pipeline.Workspace)/drop/azuredeploy.json'
 
           - task: AzureFunctionApp@1
-              displayName: 'Azure functions app deploy'
-              inputs:
-                azureSubscription: '$(azureSubscription)'
-                appType: functionApp
-                appName: $(functionAppName)
-                package: '$(Pipeline.Workspace)/drop/Function/$(Build.BuildId).zip'
+            displayName: 'Azure functions app deploy'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: functionApp
+              appName: $(functionAppName)
+              package: '$(Pipeline.Workspace)/drop/Function/$(Build.BuildId).zip'
                  
