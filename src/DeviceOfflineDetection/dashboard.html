@@ -3,18 +3,49 @@
 <head>
     <title>SignalR Device Status Dashboard</title>
     <style type="text/css">
-        .container {
-            background-color: #99CCFF;
-            border: thick solid #808080;
-            padding: 20px;
-            margin: 20px;
+        body {
+            font-family: Consolas;
+            background-color: #ebebeb;
         }
+
+        h1 {
+            padding: 10px;
+            margin: 0px;
+        }
+
+        .container #statusses {
+            padding: 0px;
+            margin: 0px;
+        }
+
+        .container li {
+            float: left;
+            height: 40px;
+            width: 40px;
+            border-radius: 5px;
+            border: 1px solid black;
+            margin: 5px;
+            list-style: none;
+            padding: 10px 5px 0px 5px;
+            text-align: center;
+        }
+
+            .container li.online {
+                background-color: #a6cf9e;
+            }
+
+            .container li.offline {
+                background-color: #cf9e9e;
+            }
     </style>
 </head>
 <body>
+    <h1>Devices</h1>
+
     <div class="container">
         <ul id="statusses"></ul>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.1.2/dist/browser/signalr.js"></script>
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
@@ -23,10 +54,15 @@
                 .withUrl('/api')
                 .build();
 
-            connection.on('statusChanged', function (message) { 
-                var liElement = document.createElement('li');
-                liElement.innerHTML = "<b>" + message.deviceId + "</b> is now "+ message.status;
-                document.getElementById('statusses').appendChild(liElement);
+            connection.on('statusChanged', function (message) {
+                let liElement = document.getElementById(message.deviceId);
+                if (!liElement) {
+                    liElement = document.createElement('li');
+                    liElement.id = message.deviceId
+                    liElement.innerHTML = message.deviceId;
+                    document.getElementById('statusses').appendChild(liElement);
+                }
+                liElement.className = message.status;
             });
 
             connection.start()

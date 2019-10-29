@@ -29,9 +29,6 @@ namespace DeviceOfflineDetection
         [JsonProperty]
         public string TimeoutQueueMessagePopReceipt { get; set; }
 
-        [JsonProperty]
-        public bool Online { get; set; }
-
         private readonly ILogger logger;
         private readonly CloudQueue timeoutQueue;
         private readonly IAsyncCollector<SignalRMessage> signalRMessages;
@@ -67,7 +64,6 @@ namespace DeviceOfflineDetection
         public async Task MessageReceived()
         {
             this.LastCommunicationDateTime = DateTime.UtcNow;
-            this.Online = true;
 
             bool addTimeoutMessage = true;
             if (this.TimeoutQueueMessageId != null)
@@ -78,9 +74,10 @@ namespace DeviceOfflineDetection
 
                     var message = new CloudQueueMessage(this.TimeoutQueueMessageId, this.TimeoutQueueMessagePopReceipt);
                     await this.timeoutQueue.UpdateMessageAsync(message, this.OfflineAfter.Value, MessageUpdateFields.Visibility);
+                    this.TimeoutQueueMessagePopReceipt = message.PopReceipt;
                     addTimeoutMessage = false;
                 }
-                catch (StorageException ex)
+                catch (StorageException)
                 {
                     // once... there was a message, not any more
                     addTimeoutMessage = true;
@@ -104,16 +101,22 @@ namespace DeviceOfflineDetection
 
         private async Task ReportState(string state)
         {
-            await this.signalRMessages.AddAsync(new SignalRMessage
+            try
             {
-                Target = "statusChanged",
-                Arguments = new[] { new { deviceId = this.Id, status = state } }
-            });
+                await this.signalRMessages.AddAsync(new SignalRMessage
+                {
+                    Target = "statusChanged",
+                    Arguments = new[] { new { deviceId = this.Id, status = state } }
+                });
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "say what?");
+            }
         }
 
         public async Task DeviceTimeout()
         {
-            this.Online = false;
             this.TimeoutQueueMessageId = null;
             this.TimeoutQueueMessagePopReceipt = null;
 
