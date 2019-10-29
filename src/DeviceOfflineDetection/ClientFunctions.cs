@@ -26,6 +26,18 @@ namespace DeviceOfflineDetection
             return new OkResult();
         }
 
+        [FunctionName(nameof(QueueTrigger))]
+        public static async Task QueueTrigger(
+            [QueueTrigger("device-messages", Connection = "AzureWebJobsStorage")] CloudQueueMessage message,
+            [DurableClient] IDurableEntityClient durableEntityClient,
+            ILogger log)
+        {
+            log.LogInformation($"Receiving message for device {message.AsString}");
+
+            var entity = new EntityId(nameof(DeviceEntity), message.AsString);
+            await durableEntityClient.SignalEntityAsync(entity, nameof(DeviceEntity.MessageReceived));
+        }
+
         [FunctionName(nameof(HandleOfflineMessage))]
         public static async Task HandleOfflineMessage(
             [DurableClient] IDurableEntityClient durableEntityClient,
