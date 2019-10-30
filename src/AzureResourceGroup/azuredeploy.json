@@ -49,9 +49,11 @@
       "location": "[resourceGroup().location]",
       "kind": "app",
       "properties": {
-        "name": "[variables('functionPlanAppName')]",
-        "computeMode": "Dynamic",
-        "sku": "Dynamic"
+        "name": "[variables('functionPlanAppName')]"
+      },
+      "sku": {
+        "Tier": "ElasticPremium",
+        "Name": "EP2"
       }
     },
     {
@@ -87,7 +89,7 @@
             {
               "name": "AzureSignalRConnectionString",
               "value": "[concat('Endpoint=https://', variables('signalRServiceName'), '.service.signalr.net;AccessKey=', listKeys(resourceId('Microsoft.SignalRService/SignalR', variables('signalRServiceName')), providers('Microsoft.SignalRService','SignalR').apiVersions[0]).primaryKey)]"
-            } 
+            }
           ]
         }
       },
