@@ -5,8 +5,8 @@
 variables: 
   ## 👇 Update with your own values 👇 ##
   azureSubscription: 'Microsoft Azure Internal Consumption - Kesch'
-  functionAppName: 'offlinedetection'
-  resourceGroupName: 'offlinedetection' 
+  functionAppName: 'offlinedetection2'
+  resourceGroupName: 'offlinedetection2' 
   ## ☝ Update with your own values ☝ ##
 
   vmImageName: 'vs2017-win2016'  
