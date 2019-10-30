@@ -6,7 +6,11 @@
       "storageProvider": {
         "azureStorage": {
           "connectionStringName": "DurableFunctionsStorageAccount",
-          "partitionCount": 15
+          "partitionCount": 15,
+          "extendedSessionsEnabled": true,
+          "extendedSessionIdleTimeoutInSeconds": 30,
+          "maxConcurrentActivityFunctions": 250,
+          "maxConcurrentOrchestratorFunctions": 250
         }
       }
     }
