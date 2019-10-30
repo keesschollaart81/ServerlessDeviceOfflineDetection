@@ -48,12 +48,8 @@
       "name": "[variables('functionPlanAppName')]",
       "location": "[resourceGroup().location]",
       "properties": {
-        "name": "[variables('functionPlanAppName')]",
-        "perSiteScaling": false,
-        "reserved": false,
-        "targetWorkerCount": 0,
-        "targetWorkerSizeId": 0
-
+        "name": "[variables('functionPlanAppName')]", 
+        "sku": "EP2"
       },
       "kind": "elastic",
       "sku": {

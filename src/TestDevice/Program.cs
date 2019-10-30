@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -17,6 +18,7 @@ namespace TestDevice
         private static CloudQueue Queue;
         private static Task MessageSenderTask;
         private static CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
+        private static int StartWithDeviceId = 1;
 
         static void Main(string[] args)
         {
@@ -40,7 +42,7 @@ namespace TestDevice
                     {
                         var start = DateTime.Now;
 
-                        await Task.WhenAll(Enumerable.Range(0, devicesCount).Select(async deviceId => {
+                        await Task.WhenAll(Enumerable.Range(StartWithDeviceId, devicesCount).Select(async deviceId => {
                             await Queue.AddMessageAsync(new CloudQueueMessage($"{deviceId}"));
                         }));
 
@@ -68,6 +70,8 @@ namespace TestDevice
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
+
+            StartWithDeviceId = int.Parse(configurationRoot["StartWithDeviceId"]);
 
             var storageAccount = CloudStorageAccount.Parse(configurationRoot.GetConnectionString("StorageConnectionString"));
             var queueClient = storageAccount.CreateCloudQueueClient();
