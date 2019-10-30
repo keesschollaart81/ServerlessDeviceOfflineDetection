@@ -46,15 +46,22 @@
       "type": "Microsoft.Web/serverFarms",
       "apiVersion": "2015-04-01",
       "name": "[variables('functionPlanAppName')]",
-      "location": "[resourceGroup().location]",
-      "kind": "app",
+      "location": "[resourceGroup().location]", 
       "properties": {
         "name": "[variables('functionPlanAppName')]",
-        "sku":  "EP2"
+        "perSiteScaling": false,
+        "reserved": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0
+
       },
+      "kind": "elastic",
       "sku": {
-        "Tier": "ElasticPremium",
-        "Name": "EP2"
+        "name": "EP2",
+        "tier": "ElasticPremium",
+        "size": "EP2",
+        "family": "EP",
+        "capacity": 1
       }
     },
     {
