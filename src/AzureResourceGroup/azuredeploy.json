@@ -49,7 +49,8 @@
       "location": "[resourceGroup().location]",
       "kind": "app",
       "properties": {
-        "name": "[variables('functionPlanAppName')]"
+        "name": "[variables('functionPlanAppName')]",
+        "sku":  "EP2"
       },
       "sku": {
         "Tier": "ElasticPremium",
