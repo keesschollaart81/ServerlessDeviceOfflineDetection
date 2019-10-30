@@ -44,9 +44,9 @@
     },
     {
       "type": "Microsoft.Web/serverFarms",
-      "apiVersion": "2015-04-01",
+      "apiVersion": "2018-11-01",
       "name": "[variables('functionPlanAppName')]",
-      "location": "[resourceGroup().location]", 
+      "location": "[resourceGroup().location]",
       "properties": {
         "name": "[variables('functionPlanAppName')]",
         "perSiteScaling": false,
