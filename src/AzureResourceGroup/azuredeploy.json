@@ -8,7 +8,7 @@
   },
   "variables": {
     "prefix": "[toLower(parameters('functionAppName'))]",
-    "functionPlanAppName": "[concat(variables('prefix'),'pl')]",
+    "functionPlanAppName": "[concat(variables('prefix'),'asp')]",
     "functionAppName": "[variables('prefix')]",
     "applicationInsightsName": "[concat(variables('prefix'),'ai')]",
     "storageAccountName": "[concat(variables('prefix'),'st')]",
