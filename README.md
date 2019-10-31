@@ -2,8 +2,7 @@
 
 This is the companion repository for this blogpost:
 
-//todo: update
-http://case.schollaart.net/2019/07/01/device-offline-detection-with-durable-entities.html
+http://case.schollaart.net/2019/10/31/device-offline-detection-with-durable-entities.html
 
 ## Run it yourself
 
