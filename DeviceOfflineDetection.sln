@@ -3,7 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceOfflineDetection", "src\DeviceOfflineDetection.csproj", "{A35A8A0C-EFAA-42F3-A376-6E81E680B838}"
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "AzureResourceGroup", "src\AzureResourceGroup\AzureResourceGroup.deployproj", "{B1EBDA22-E6AC-40F8-88D5-F6F76676EADC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceOfflineDetection", "src\DeviceOfflineDetection\DeviceOfflineDetection.csproj", "{BB1C95B7-3951-4963-9944-001A1C1D4531}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FECD95BD-F5EE-4200-A616-C6E3D5D0162D}"
+	ProjectSection(SolutionItems) = preProject
+		azure-pipelines.yaml = azure-pipelines.yaml
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestDevice", "src\TestDevice\TestDevice.csproj", "{EE63B4A6-1847-4BC5-AAAD-A6617809FF82}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +21,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A35A8A0C-EFAA-42F3-A376-6E81E680B838}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A35A8A0C-EFAA-42F3-A376-6E81E680B838}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A35A8A0C-EFAA-42F3-A376-6E81E680B838}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A35A8A0C-EFAA-42F3-A376-6E81E680B838}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1EBDA22-E6AC-40F8-88D5-F6F76676EADC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1EBDA22-E6AC-40F8-88D5-F6F76676EADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1EBDA22-E6AC-40F8-88D5-F6F76676EADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1EBDA22-E6AC-40F8-88D5-F6F76676EADC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB1C95B7-3951-4963-9944-001A1C1D4531}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB1C95B7-3951-4963-9944-001A1C1D4531}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB1C95B7-3951-4963-9944-001A1C1D4531}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB1C95B7-3951-4963-9944-001A1C1D4531}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE63B4A6-1847-4BC5-AAAD-A6617809FF82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE63B4A6-1847-4BC5-AAAD-A6617809FF82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE63B4A6-1847-4BC5-AAAD-A6617809FF82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE63B4A6-1847-4BC5-AAAD-A6617809FF82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

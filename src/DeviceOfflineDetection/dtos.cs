@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 
 namespace DeviceOfflineDetection
@@ -5,12 +6,6 @@ namespace DeviceOfflineDetection
     public class OrchestratorArgs
     {
         public string DeviceId { get; set; }
-    }
-
-    public class Device
-    {
-        public TimeSpan OfflineAfter { get; set; }
-        public DateTime? LastCommunicationDateTime { get; set; }
     }
 
     public class HttpTriggerArgs

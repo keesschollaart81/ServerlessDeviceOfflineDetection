@@ -1,0 +1,83 @@
+﻿trigger:
+- master
+- dev
+
+variables: 
+  ## 👇 Update with your own values 👇 ##
+  azureSubscription: 'Microsoft Azure Internal Consumption - Kesch'
+  functionAppName: 'offlinedetection2'
+  resourceGroupName: 'offlinedetection2' 
+  ## ☝ Update with your own values ☝ ##
+
+  vmImageName: 'vs2017-win2016'  
+
+stages:
+- stage: Build
+  displayName: 'Build'
+  jobs:
+
+  - job: BuildFunctionApp
+    pool:
+      vmImage: $(vmImageName)
+          
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Build project'
+      inputs:
+        projects: '**/DeviceOfflineDetection.csproj'
+        arguments: '--output $(System.DefaultWorkingDirectory)/publish_output --configuration Release'
+    
+    - task: ArchiveFiles@2
+      displayName: 'Archive files'
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/publish_output'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/Functions.zip
+        replaceExistingArchive: true
+ 
+    - task: CopyFiles@2
+      displayName: Stage ARM Template for publishing
+      inputs:
+        contents: 'src/AzureResourceGroup/azuredeploy.json'
+        TargetFolder: $(Build.ArtifactStagingDirectory)
+        
+    - publish: $(Build.ArtifactStagingDirectory)
+      artifact: drop
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Build
+  condition: succeeded()
+
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    environment: 'development'
+    pool:
+      vmImage: $(vmImageName)
+
+    strategy:
+      runOnce:
+        deploy:
+
+          steps: 
+          - task: AzureResourceManagerTemplateDeployment@3
+            displayName: 'ARM Template deployment: Resource Group scope'
+            inputs:
+              ConnectedServiceName: '$(azureSubscription)' 
+              azureSubscription: '$(azureSubscription)'
+              resourceGroupName: '$(resourceGroupName)'
+              location: 'West Europe'
+              csmFile: '$(Pipeline.Workspace)/drop/src/AzureResourceGroup/azuredeploy.json'
+              overrideParameters: '-functionAppName $(functionAppName)'
+               
+          - task: AzureRmWebAppDeployment@4
+            displayName: 'Azure functions app deploy'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: functionApp
+              WebAppName: $(functionAppName)
+              enableCustomDeployment: true
+              deploymentMethod: zipDeploy
+              package: '$(Pipeline.Workspace)/drop/Functions.zip'
