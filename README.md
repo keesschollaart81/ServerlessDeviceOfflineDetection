@@ -19,8 +19,8 @@ You have 2 options:
    
 2. Clone this repository to your machine
 3. Right Click Deploy via an IDE with Azure Functions Tooling installed
-	a. VS Code with [read more](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs-code#publish-to-azure)
-	b. Visual Studio 2019 [read more](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs#publish-to-azure)
+	a. VS Code with [read more](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs-code#publish-to-azure) ([screenshot](images/step7.png))
+	b. Visual Studio 2019 [read more](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs#publish-to-azure) ([screenshot](images/step7b.png))
 4. Continue reading '[Running it]('#Running-it')'
 
 ### Deployment option 2 (via Azure Pipelines)
@@ -45,4 +45,4 @@ You have 2 options:
 	- Click on 'Access Keys' and copy the Connection String
 	- Open this cloned repository/solution on your machine with VS Code or Visual Studio and go to the TestDevice project
 	- Edit the appsettings.json and update the `StorageConnectionString`
-	- Run the TestDevice console app [src/TestDevice] and observe the status in the dashboard, for example, start with 200 devices and then change it to 100
+	- Run the TestDevice console app [src/TestDevice] (`dotnet run`) and observe the status in the dashboard, for example, start with 200 devices and then change it to 100

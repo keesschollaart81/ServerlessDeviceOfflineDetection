@@ -35,7 +35,7 @@
         "type": "func",
         "dependsOn": "build",
         "options": {
-            "cwd": "${workspaceFolder}/src/bin/Debug/netcoreapp2.2"
+            "cwd": "${workspaceFolder}/src/DeviceOfflineDetection/bin/Debug/netcoreapp2.2"
         },
         "command": "host start",
         "isBackground": true,

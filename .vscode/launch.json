@@ -1,6 +1,18 @@
 {
     "version": "0.2.0",
     "configurations": [
+
+      {
+        "name": ".NET Core Launch (console)",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build",
+        "program": "${workspaceFolder}/src/TestDevice/bin/Debug/netcoreapp3.0/TestDevice.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}/src/TestDevice",
+        "stopAtEntry": false,
+        "console": "internalConsole"
+      },
       {
         "name": "Attach to C# Functions",
         "type": "coreclr",
