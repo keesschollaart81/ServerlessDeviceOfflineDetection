@@ -3,7 +3,10 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "functionAppName": {
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "Name of your project, has to be globally unique!"
+      }
     }
   },
   "variables": {
