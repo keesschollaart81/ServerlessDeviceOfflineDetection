@@ -21,7 +21,7 @@ You have 2 options:
 3. Right Click Deploy via an IDE with Azure Functions Tooling installed
 	a. VS Code with [read more](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs-code#publish-to-azure) ([screenshot](images/step7.png))
 	b. Visual Studio 2019 [read more](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs#publish-to-azure) ([screenshot](images/step7b.png))
-4. Continue reading '[Running it]('#Running-it')'
+4. Continue reading '[Running it]('running-it')'
 
 ### Deployment option 2 (via Azure Pipelines)
 
@@ -39,10 +39,10 @@ You have 2 options:
 
 ### Running it
 
-- go to https://{functionAppName}.azurewebsites.net/api/dashboard
+- Go to https://{functionAppName}.azurewebsites.net/api/dashboard, here you should see a Header called 'Devices'
 - Update the ConnectionString to the Storage Queue in the TestDevice project
 	- Go to the Azure Portal and go to the `{functionAppName}st` Storage Account resource (dont mistake it for the storage account ending op `dst`)
 	- Click on 'Access Keys' and copy the Connection String
 	- Open this cloned repository/solution on your machine with VS Code or Visual Studio and go to the TestDevice project
 	- Edit the appsettings.json and update the `StorageConnectionString`
-	- Run the TestDevice console app [src/TestDevice] (`dotnet run`) and observe the status in the dashboard, for example, start with 200 devices and then change it to 100
+- Run the TestDevice console app [src/TestDevice] (`dotnet run`) and observe the status in the dashboard, for example, start with 200 devices and then change it to 100
