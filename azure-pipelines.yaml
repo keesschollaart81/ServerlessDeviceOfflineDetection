@@ -39,7 +39,7 @@ stages:
     - task: CopyFiles@2
       displayName: Stage ARM Template for publishing
       inputs:
-        contents: 'src/AzureResourceGroup/azuredeploy.json'
+        contents: 'azuredeploy.json'
         TargetFolder: $(Build.ArtifactStagingDirectory)
         
     - publish: $(Build.ArtifactStagingDirectory)
@@ -69,7 +69,7 @@ stages:
               azureSubscription: '$(azureSubscription)'
               resourceGroupName: '$(resourceGroupName)'
               location: 'West Europe'
-              csmFile: '$(Pipeline.Workspace)/drop/src/AzureResourceGroup/azuredeploy.json'
+              csmFile: '$(Pipeline.Workspace)/drop/azuredeploy.json'
               overrideParameters: '-functionAppName $(functionAppName)'
                
           - task: AzureRmWebAppDeployment@4

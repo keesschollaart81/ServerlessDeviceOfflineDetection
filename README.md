@@ -14,7 +14,9 @@ You have 2 options:
 ### Deployment option 1 
 
 1. Click the Button below to create the infrastructure in your Azure Subscription
+
    [![Deploy to Azure](https://azuredeploy.net/deploybutton.png)](https://azuredeploy.net/)
+   
 2. Clone this repository to your machine
 3. Right Click Deploy via an IDE with Azure Functions Tooling installed
 	a. VS Code with [read more](https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-vs-code#publish-to-azure)
