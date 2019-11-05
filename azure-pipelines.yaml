@@ -5,8 +5,8 @@ trigger:
 variables: 
   ## 👇 Update with your own values 👇 ##
   azureSubscription: 'Microsoft Azure Internal Consumption - Kesch'
-  functionAppName: 'igniteofflinedetection'
-  resourceGroupName: 'igniteofflinedetection' 
+  functionAppName: 'igniteofflinedetect'
+  resourceGroupName: 'igniteofflinedetect' 
   ## ☝ Update with your own values ☝ ##
 
   vmImageName: 'vs2017-win2016'  
@@ -68,7 +68,7 @@ stages:
               ConnectedServiceName: '$(azureSubscription)' 
               azureSubscription: '$(azureSubscription)'
               resourceGroupName: '$(resourceGroupName)'
-              location: 'West Europe'
+              location: 'Central US'
               csmFile: '$(Pipeline.Workspace)/drop/azuredeploy.json'
               overrideParameters: '-functionAppName $(functionAppName)'
                
