@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage;
@@ -53,7 +54,7 @@ namespace DeviceOfflineDetection
             [Queue("timeoutQueue", Connection = "AzureWebJobsStorage")] CloudQueue timeoutQueue,
             ILogger logger)
         {
-            if (context.IsNewlyConstructed)
+            if (!context.HasState)
             {
                 context.SetState(new DeviceEntity(context.EntityKey, logger, timeoutQueue, signalRMessages));
             }

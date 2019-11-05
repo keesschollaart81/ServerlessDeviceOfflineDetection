@@ -5,8 +5,8 @@ trigger:
 variables: 
   ## 👇 Update with your own values 👇 ##
   azureSubscription: 'Microsoft Azure Internal Consumption - Kesch'
-  functionAppName: 'igniteofflinedetect'
-  resourceGroupName: 'igniteofflinedetect' 
+  functionAppName: 'offlinedetection'
+  resourceGroupName: 'offlinedetection' 
   ## ☝ Update with your own values ☝ ##
 
   vmImageName: 'vs2017-win2016'  
