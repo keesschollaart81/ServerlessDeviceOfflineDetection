@@ -4,13 +4,16 @@
     "durableTask": {
       "hubName": "Devices",
       "storageProvider": {
-        "connectionStringName": "DurableFunctionsStorageAccount",
-        "partitionCount": 15
+        "partitionCount": 15,
+        "connectionStringName": "DurableFunctionsStorageAccount"
       },
       "extendedSessionsEnabled": true,
       "extendedSessionIdleTimeoutInSeconds": 30,
       "maxConcurrentActivityFunctions": 250,
       "maxConcurrentOrchestratorFunctions": 250
+    },
+    "queues": {
+      "maxPollingInterval": "00:00:01"
     }
   }
 }

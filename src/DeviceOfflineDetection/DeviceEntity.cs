@@ -19,109 +19,56 @@ namespace DeviceOfflineDetection
         public string Id { get; set; }
 
         [JsonProperty]
-        public TimeSpan? OfflineAfter { get; set; }
-
-        [JsonProperty]
         public DateTime? LastCommunicationDateTime { get; set; }
 
-        [JsonProperty]
-        public string TimeoutQueueMessageId { get; set; }
-
-        [JsonProperty]
-        public string TimeoutQueueMessagePopReceipt { get; set; }
-
         private readonly ILogger logger;
-        private readonly CloudQueue timeoutQueue;
+        private readonly IDurableEntityContext context;
         private readonly IAsyncCollector<SignalRMessage> signalRMessages;
+        private TimeSpan offlineAfter = TimeSpan.FromSeconds(20);
 
-        public DeviceEntity(string id, ILogger logger, CloudQueue timeoutQueue, IAsyncCollector<SignalRMessage> signalRMessages)
+        public DeviceEntity(string id, ILogger logger, IAsyncCollector<SignalRMessage> signalRMessages, IDurableEntityContext context)
         {
             this.Id = id;
             this.logger = logger;
-            this.timeoutQueue = timeoutQueue;
             this.signalRMessages = signalRMessages;
-
-            if (!OfflineAfter.HasValue)
-            {
-                OfflineAfter = TimeSpan.FromSeconds(30);
-            }
+            this.context = context;
         }
 
         [FunctionName(nameof(DeviceEntity))]
         public static async Task HandleEntityOperation(
             [EntityTrigger] IDurableEntityContext context,
             [SignalR(HubName = "devicestatus")] IAsyncCollector<SignalRMessage> signalRMessages,
-            [Queue("timeoutQueue", Connection = "AzureWebJobsStorage")] CloudQueue timeoutQueue,
             ILogger logger)
         {
-            if (!context.HasState)
-            {
-                context.SetState(new DeviceEntity(context.EntityKey, logger, timeoutQueue, signalRMessages));
-            }
-
-            await context.DispatchAsync<DeviceEntity>(context.EntityKey, logger, timeoutQueue, signalRMessages);
+            await context.DispatchAsync<DeviceEntity>(context.EntityKey, logger, signalRMessages, context);
         }
 
         public async Task MessageReceived()
         {
             this.LastCommunicationDateTime = DateTime.UtcNow;
 
-            bool addTimeoutMessage = true;
-            if (this.TimeoutQueueMessageId != null)
-            {
-                try
-                {
-                    // reset the timeout
+            var entityId = new EntityId(nameof(DeviceEntity), this.Id);
+            this.context.SignalEntity(entityId, DateTime.UtcNow.Add(this.offlineAfter), nameof(DeviceTimeout));
 
-                    var message = new CloudQueueMessage(this.TimeoutQueueMessageId, this.TimeoutQueueMessagePopReceipt);
-                    await this.timeoutQueue.UpdateMessageAsync(message, this.OfflineAfter.Value, MessageUpdateFields.Visibility);
-                    this.TimeoutQueueMessagePopReceipt = message.PopReceipt;
-                    addTimeoutMessage = false;
-                }
-                catch (StorageException)
-                {
-                    // once... there was a message, not any more
-                    addTimeoutMessage = true;
-                }
-            }
-
-            if (addTimeoutMessage)
-            {
-                // start timeout 
-
-                var message = new CloudQueueMessage(this.Id);
-                await timeoutQueue.AddMessageAsync(message, null, this.OfflineAfter, null, null);
-                this.TimeoutQueueMessageId = message.Id;
-                this.TimeoutQueueMessagePopReceipt = message.PopReceipt;
-
-                await this.ReportState("online");
-                this.logger.LogInformation($"Device ${this.Id} if now online");
-                this.logger.LogMetric("online", 1);
-            }
+            await this.ReportState("online");
+            this.logger.LogInformation($"Device ${this.Id} if now online");
         }
 
         private async Task ReportState(string state)
         {
-            try
+            await this.signalRMessages.AddAsync(new SignalRMessage
             {
-                await this.signalRMessages.AddAsync(new SignalRMessage
-                {
-                    Target = "statusChanged",
-                    Arguments = new[] { new { deviceId = this.Id, status = state } }
-                });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "say what?");
-            }
+                Target = "statusChanged",
+                Arguments = new[] { new { deviceId = this.Id, status = state } }
+            });
         }
 
         public async Task DeviceTimeout()
         {
-            this.TimeoutQueueMessageId = null;
-            this.TimeoutQueueMessagePopReceipt = null;
-
-            await this.ReportState("offline");
+            if (DateTime.UtcNow - LastCommunicationDateTime > offlineAfter)
+            {
+                await ReportState("offline");
+            }
         }
     }
 }
